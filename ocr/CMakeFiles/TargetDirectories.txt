@@ -1,0 +1,4 @@
+/Users/danielchoi/Dev/sudoku-c/ocr/CMakeFiles/edit_cache.dir
+/Users/danielchoi/Dev/sudoku-c/ocr/CMakeFiles/rebuild_cache.dir
+/Users/danielchoi/Dev/sudoku-c/ocr/CMakeFiles/train_test.dir
+/Users/danielchoi/Dev/sudoku-c/ocr/CMakeFiles/ocr.dir
