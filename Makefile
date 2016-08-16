@@ -123,32 +123,32 @@ main/fast:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
 .PHONY : main/fast
 
-image_processing.o: image_processing.cpp.o
+imageProcessor.o: imageProcessor.cpp.o
 
-.PHONY : image_processing.o
+.PHONY : imageProcessor.o
 
 # target to build an object file
-image_processing.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/image_processing.cpp.o
-.PHONY : image_processing.cpp.o
+imageProcessor.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/imageProcessor.cpp.o
+.PHONY : imageProcessor.cpp.o
 
-image_processing.i: image_processing.cpp.i
+imageProcessor.i: imageProcessor.cpp.i
 
-.PHONY : image_processing.i
+.PHONY : imageProcessor.i
 
 # target to preprocess a source file
-image_processing.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/image_processing.cpp.i
-.PHONY : image_processing.cpp.i
+imageProcessor.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/imageProcessor.cpp.i
+.PHONY : imageProcessor.cpp.i
 
-image_processing.s: image_processing.cpp.s
+imageProcessor.s: imageProcessor.cpp.s
 
-.PHONY : image_processing.s
+.PHONY : imageProcessor.s
 
 # target to generate assembly for a file
-image_processing.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/image_processing.cpp.s
-.PHONY : image_processing.cpp.s
+imageProcessor.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/imageProcessor.cpp.s
+.PHONY : imageProcessor.cpp.s
 
 main.o: main.cpp.o
 
@@ -186,9 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... main"
-	@echo "... image_processing.o"
-	@echo "... image_processing.i"
-	@echo "... image_processing.s"
+	@echo "... imageProcessor.o"
+	@echo "... imageProcessor.i"
+	@echo "... imageProcessor.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

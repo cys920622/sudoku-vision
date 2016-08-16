@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/Users/danielchoi/Dev/sudoku-c/image_processing.cpp
+/Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp
 iostream
 -
 stdio.h
@@ -21,8 +21,8 @@ iostream
 -
 opencv2/opencv.hpp
 /Users/danielchoi/Dev/sudoku-c/opencv2/opencv.hpp
-image_processing.cpp
-/Users/danielchoi/Dev/sudoku-c/image_processing.cpp
+imageProcessor.cpp
+/Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

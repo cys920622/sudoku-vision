@@ -81,40 +81,40 @@ CMakeFiles/main.dir/main.cpp.o.provides: CMakeFiles/main.dir/main.cpp.o.requires
 CMakeFiles/main.dir/main.cpp.o.provides.build: CMakeFiles/main.dir/main.cpp.o
 
 
-CMakeFiles/main.dir/image_processing.cpp.o: CMakeFiles/main.dir/flags.make
-CMakeFiles/main.dir/image_processing.cpp.o: image_processing.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/danielchoi/Dev/sudoku-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/image_processing.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/image_processing.cpp.o -c /Users/danielchoi/Dev/sudoku-c/image_processing.cpp
+CMakeFiles/main.dir/imageProcessor.cpp.o: CMakeFiles/main.dir/flags.make
+CMakeFiles/main.dir/imageProcessor.cpp.o: imageProcessor.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/danielchoi/Dev/sudoku-c/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/main.dir/imageProcessor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/main.dir/imageProcessor.cpp.o -c /Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp
 
-CMakeFiles/main.dir/image_processing.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/image_processing.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/danielchoi/Dev/sudoku-c/image_processing.cpp > CMakeFiles/main.dir/image_processing.cpp.i
+CMakeFiles/main.dir/imageProcessor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/main.dir/imageProcessor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp > CMakeFiles/main.dir/imageProcessor.cpp.i
 
-CMakeFiles/main.dir/image_processing.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/image_processing.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/danielchoi/Dev/sudoku-c/image_processing.cpp -o CMakeFiles/main.dir/image_processing.cpp.s
+CMakeFiles/main.dir/imageProcessor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/main.dir/imageProcessor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp -o CMakeFiles/main.dir/imageProcessor.cpp.s
 
-CMakeFiles/main.dir/image_processing.cpp.o.requires:
+CMakeFiles/main.dir/imageProcessor.cpp.o.requires:
 
-.PHONY : CMakeFiles/main.dir/image_processing.cpp.o.requires
+.PHONY : CMakeFiles/main.dir/imageProcessor.cpp.o.requires
 
-CMakeFiles/main.dir/image_processing.cpp.o.provides: CMakeFiles/main.dir/image_processing.cpp.o.requires
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/image_processing.cpp.o.provides.build
-.PHONY : CMakeFiles/main.dir/image_processing.cpp.o.provides
+CMakeFiles/main.dir/imageProcessor.cpp.o.provides: CMakeFiles/main.dir/imageProcessor.cpp.o.requires
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/imageProcessor.cpp.o.provides.build
+.PHONY : CMakeFiles/main.dir/imageProcessor.cpp.o.provides
 
-CMakeFiles/main.dir/image_processing.cpp.o.provides.build: CMakeFiles/main.dir/image_processing.cpp.o
+CMakeFiles/main.dir/imageProcessor.cpp.o.provides.build: CMakeFiles/main.dir/imageProcessor.cpp.o
 
 
 # Object files for target main
 main_OBJECTS = \
 "CMakeFiles/main.dir/main.cpp.o" \
-"CMakeFiles/main.dir/image_processing.cpp.o"
+"CMakeFiles/main.dir/imageProcessor.cpp.o"
 
 # External object files for target main
 main_EXTERNAL_OBJECTS =
 
 main: CMakeFiles/main.dir/main.cpp.o
-main: CMakeFiles/main.dir/image_processing.cpp.o
+main: CMakeFiles/main.dir/imageProcessor.cpp.o
 main: CMakeFiles/main.dir/build.make
 main: /usr/local/lib/libopencv_xphoto.3.1.0.dylib
 main: /usr/local/lib/libopencv_xobjdetect.3.1.0.dylib
@@ -166,7 +166,7 @@ CMakeFiles/main.dir/build: main
 .PHONY : CMakeFiles/main.dir/build
 
 CMakeFiles/main.dir/requires: CMakeFiles/main.dir/main.cpp.o.requires
-CMakeFiles/main.dir/requires: CMakeFiles/main.dir/image_processing.cpp.o.requires
+CMakeFiles/main.dir/requires: CMakeFiles/main.dir/imageProcessor.cpp.o.requires
 
 .PHONY : CMakeFiles/main.dir/requires
 
