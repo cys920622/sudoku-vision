@@ -12,6 +12,7 @@ int main(int, char**) {
     if(!cap.isOpened())  // check if we succeeded
         return -1;
     ImageProcessor imageProcessor;
+    bool isTraining = true;
 
 //    for (int i = 0;; i++) {
     for (int i = 0; i < 1; i++) { // One iteration
@@ -36,7 +37,12 @@ int main(int, char**) {
             }
 //            imageProcessor.displayImage();
 //            imageProcessor.readGrid();
-            imageProcessor.createSampleClassifications();
+            if (isTraining) {
+                imageProcessor.createSampleClassifications();
+            } else {
+                imageProcessor.trainKnn();
+                imageProcessor.readGrid();
+            }
 
             imageProcessor.displayImage();
             break;

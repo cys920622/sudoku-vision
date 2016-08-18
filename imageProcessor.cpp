@@ -22,6 +22,7 @@ public:
     vector<Mat> cells;
     int resizedCellWidth = 20;
     int resizedCellHeight = 30;
+    Ptr<KNearest> kNearest;
 
     void resetCheckpoints() {
         foundBiggestRect = false;
@@ -133,24 +134,20 @@ public:
         }
     }
 
-    void readGrid() {
-        int cropPixels = 2;
-        vector<Mat> croppedCells;
-        for (int i = 0; i < cellContours.size(); i++) {
-            Rect roi(cellContours[i][0].x + cropPixels,
-                     cellContours[i][0].y + cropPixels,
-                     cellContours[i][2].x - cellContours[i][0].x - cropPixels*2,
-                     cellContours[i][2].y - cellContours[i][0].y - cropPixels*2);
-            croppedCells.push_back(workingImg(roi));
+//    void readGrid() {
+//        int cropPixels = 2;
+//        vector<Mat> croppedCells;
+//        for (int i = 0; i < cellContours.size(); i++) {
+//            Rect roi(cellContours[i][0].x + cropPixels,
+//                     cellContours[i][0].y + cropPixels,
+//                     cellContours[i][2].x - cellContours[i][0].x - cropPixels*2,
+//                     cellContours[i][2].y - cellContours[i][0].y - cropPixels*2);
+//            croppedCells.push_back(workingImg(roi));
 //            string s = "./cell_samples/" + to_string(i) + ".png";
 //            imwrite( s, workingImg(roi) );
-        }
-        cells = croppedCells;
-    }
-
-    void readCell(Mat cell, vector<Point> cellContour) {
-
-    }
+//        }
+//        cells = croppedCells;
+//    }
 
     void createSampleClassifications() {
         Mat responseInts;
@@ -171,19 +168,18 @@ public:
 
             rectangle(workingImgColor, roiRect, Scalar(0, 0, 255), 2);
 
-            Rect bounding = boundingRect(numberContours[0]);
-            Mat numberImg = workingImg(bounding);
-            Mat numberImgResized;
-            resize(numberImg, numberImgResized, Size(resizedCellWidth, resizedCellHeight));
+            Mat imgRoiResized;
+            resize(imgRoi, imgRoiResized, Size(resizedCellWidth, resizedCellHeight));
 
             imshow("workingImg", workingImgColor);
+            imshow("imgroi", imgRoi); //TODO: remove temp
             int c = waitKey(0);
             if (c == 27) {
                 return;
             } else {
                 responseInts.push_back(c);
                 Mat matImageFloat;
-                numberImgResized.convertTo(matImageFloat, CV_32FC1);
+                imgRoiResized.convertTo(matImageFloat, CV_32FC1);
                 Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
                 flattenedFloatImages.push_back(matImageFlattenedFloat);
             }
@@ -206,6 +202,80 @@ public:
         }
         trainingImagesFs << "images" << flattenedFloatImages;
         trainingImagesFs.release();
+    }
+
+    void trainKnn() {
+        Mat classificationInts;
+        Mat flattenedFloatImages;
+        FileStorage classificationsFs("classifications.xml", FileStorage::READ);
+        if (!classificationsFs.isOpened()) {
+            cout << "Error opening classification file!\n\n";
+            return;
+        }
+        classificationsFs["classifications"] >> classificationInts;
+        classificationsFs.release();
+
+        FileStorage trainingImagesFs("images.xml", FileStorage::READ);
+        if (!trainingImagesFs.isOpened()) {
+            cout << "Error opening training images file!\n\n";
+            return;
+        }
+        trainingImagesFs["images"] >> flattenedFloatImages;
+        trainingImagesFs.release();
+
+
+        kNearest = KNearest::create();
+        kNearest->train(flattenedFloatImages, ROW_SAMPLE, classificationInts);
+    }
+
+    void readGrid() {
+        Mat workingImgColor;
+        cvtColor(workingImg.clone(), workingImgColor, cv::COLOR_GRAY2BGR);
+        int cropPixels = 2;
+        int cellAreaThreshold = 40;
+        for (int i = 0; i < cellContours.size(); i++) {
+            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
+            vector<vector<Point>> numberContours;
+            Mat imgRoi(workingImg, roiRect);
+
+            findContours(imgRoi.clone(), numberContours, noArray(), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+            if (numberContours.size() == 0 || contourArea(numberContours[0]) < cellAreaThreshold) continue;
+
+            rectangle(workingImgColor, roiRect, Scalar(0, 0, 255), 2);
+
+            Rect bounding = boundingRect(numberContours[0]);
+            Mat numberImg = workingImg(bounding);
+            Mat numberImgResized;
+            resize(numberImg, numberImgResized, Size(resizedCellWidth, resizedCellHeight));
+
+            imshow("ROI", imgRoi);
+            int c = waitKey(0);
+            if (c == 27) {
+                return;
+            } else {
+                readCell(imgRoi);
+                printf("Type: %i\n\n", c);
+            }
+
+            rectangle(workingImgColor, roiRect, Scalar(0, 255, 0), 2);
+        }
+    }
+
+    /**
+     * Read the value of a single sudoku cell
+     * @param cell - processed grayscale image of a cell
+     */
+    void readCell(Mat cell) {
+        resize(cell, cell, Size(resizedCellWidth, resizedCellHeight));
+        Mat matFloat;
+        cell.convertTo(matFloat, CV_32FC1);
+        Mat matFlattenedFloat = matFloat.reshape(1, 1);
+        Mat matCurrentDigit(0, 0, CV_32F);
+        kNearest->findNearest(matFlattenedFloat, 1, matCurrentDigit);
+        float fltCurrentDigit = (float)matCurrentDigit.at<float>(0, 0);
+        int finalDigit = int(fltCurrentDigit);
+        printf("Read: %i\n", finalDigit);
     }
 
 private:
