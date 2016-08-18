@@ -6,30 +6,37 @@ using namespace cv;
 using namespace std;
 
 int main(int, char**) {
-    printf("START");
+    printf("START\n");
+
     VideoCapture cap(0); // open the default camera
     if(!cap.isOpened())  // check if we succeeded
         return -1;
     ImageProcessor imageProcessor;
 
-    for (int i = 0;; i++) {
+//    for (int i = 0;; i++) {
+    for (int i = 0; i < 1; i++) { // One iteration
         while (true) {
             imageProcessor.resetCheckpoints();
             imageProcessor.findBiggestRect(cap);
             if (!imageProcessor.foundBiggestRect) {
-                printf("FAIL: find rect: %d\n", i);
+                printf("1: finding rect: %d\n", i);
+                imageProcessor.displayImage();
                 break;
             }
             imageProcessor.findGrid();
             if (!imageProcessor.foundGrid) {
-                printf("FAIL: find grid: %d\n", i);
+                printf("2: finding grid: %d\n", i);
+                imageProcessor.displayImage();
                 break;
             }
             imageProcessor.findCells();
             if (!imageProcessor.foundCells) {
-                printf("FAIL: find cells: %d\n", i);
+                printf("3: finding cells: %d\n", i);
                 break;
             }
+//            imageProcessor.displayImage();
+//            imageProcessor.readGrid();
+            imageProcessor.createSampleClassifications();
 
             imageProcessor.displayImage();
             break;

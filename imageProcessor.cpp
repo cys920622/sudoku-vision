@@ -4,6 +4,7 @@
 #include "opencv2/opencv.hpp"
 
 using namespace cv;
+using namespace cv::ml;
 using namespace std;
 
 class ImageProcessor {
@@ -17,6 +18,10 @@ public:
     bool foundBiggestRect;
     bool foundGrid;
     bool foundCells;
+    vector<vector<Point>> cellContours;
+    vector<Mat> cells;
+    int resizedCellWidth = 20;
+    int resizedCellHeight = 30;
 
     void resetCheckpoints() {
         foundBiggestRect = false;
@@ -26,7 +31,7 @@ public:
 
     void displayImage() {
         imshow("Frame", frame);
-        imshow("Workingimg", workingImg);
+//        imshow("Workingimg", workingImg);
     }
 
     void findBiggestRect(VideoCapture video) {
@@ -103,7 +108,7 @@ public:
 
     void findCells() {
         vector<vector<Point>> allContours;
-        vector<vector<Point>> cellContours;
+        vector<vector<Point>> localCellContours;
         int thresh = 100;
         int areaThreshold = 800;
         findContours(workingImg.clone(), allContours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
@@ -114,19 +119,106 @@ public:
                 vector<Point> approx;
                 approxPolyDP(allContours[c], approx, 0.02*perimeter, true);
                 if (approx.size() == 4) {
-                    printf("Size: %f\n", area);
-                    cellContours.push_back(allContours[c]);
+//                    printf("Size: %f\n", area);
+                    localCellContours.push_back(orderPoints(approx));
                     //TODO: remove temp draw below
                     drawRect(allContours, c, Scalar(255, 255, 0));
                 }
             }
         }
-        printf("There are %lu cells\n", cellContours.size());
-        if (cellContours.size() == 81) foundCells = true;
+//        printf("There are %lu cells\n", localCellContours.size());
+        if (localCellContours.size() == 81) {
+            cellContours = localCellContours;
+            foundCells = true;
+        }
+    }
+
+    void readGrid() {
+        int cropPixels = 2;
+        vector<Mat> croppedCells;
+        for (int i = 0; i < cellContours.size(); i++) {
+            Rect roi(cellContours[i][0].x + cropPixels,
+                     cellContours[i][0].y + cropPixels,
+                     cellContours[i][2].x - cellContours[i][0].x - cropPixels*2,
+                     cellContours[i][2].y - cellContours[i][0].y - cropPixels*2);
+            croppedCells.push_back(workingImg(roi));
+//            string s = "./cell_samples/" + to_string(i) + ".png";
+//            imwrite( s, workingImg(roi) );
+        }
+        cells = croppedCells;
+    }
+
+    void readCell(Mat cell, vector<Point> cellContour) {
+
+    }
+
+    void createSampleClassifications() {
+        Mat responseInts;
+        Mat flattenedFloatImages;
+
+        Mat workingImgColor;
+        cvtColor(workingImg.clone(), workingImgColor, cv::COLOR_GRAY2BGR);
+        int cropPixels = 2;
+        int cellAreaThreshold = 40;
+        for (int i = 0; i < cellContours.size(); i++) {
+            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
+            vector<vector<Point>> numberContours;
+            Mat imgRoi(workingImg, roiRect);
+
+            findContours(imgRoi.clone(), numberContours, noArray(), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+            if (numberContours.size() == 0 || contourArea(numberContours[0]) < cellAreaThreshold) continue;
+
+            rectangle(workingImgColor, roiRect, Scalar(0, 0, 255), 2);
+
+            Rect bounding = boundingRect(numberContours[0]);
+            Mat numberImg = workingImg(bounding);
+            Mat numberImgResized;
+            resize(numberImg, numberImgResized, Size(resizedCellWidth, resizedCellHeight));
+
+            imshow("workingImg", workingImgColor);
+            int c = waitKey(0);
+            if (c == 27) {
+                return;
+            } else {
+                responseInts.push_back(c);
+                Mat matImageFloat;
+                numberImgResized.convertTo(matImageFloat, CV_32FC1);
+                Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
+                flattenedFloatImages.push_back(matImageFlattenedFloat);
+            }
+
+            rectangle(workingImgColor, roiRect, Scalar(0, 255, 0), 2);
+        }
+
+        FileStorage classificationsFs("classifications.xml", FileStorage::WRITE);
+        if (!classificationsFs.isOpened()) {
+            cout << "Error opening classification file!\n\n";
+            return;
+        }
+        classificationsFs << "classifications" << responseInts;
+        classificationsFs.release();
+
+        FileStorage trainingImagesFs("images.xml", FileStorage::WRITE);
+        if (!trainingImagesFs.isOpened()) {
+            cout << "Error opening training images file!\n\n";
+            return;
+        }
+        trainingImagesFs << "images" << flattenedFloatImages;
+        trainingImagesFs.release();
     }
 
 private:
 
+    Rect cropContourToRect(vector<Point> contour, int cropPixels) {
+        Rect cropped(
+                contour[0].x + cropPixels,
+                contour[0].y + cropPixels,
+                contour[2].x - contour[0].x - cropPixels*2,
+                contour[2].y - contour[0].y - cropPixels*2
+        );
+        return cropped;
+    }
     void printPoints(vector<Point> points) {
         printf(">>>%lu\n\n", points.size());
         for (int i=0; i < points.size(); i++) {
