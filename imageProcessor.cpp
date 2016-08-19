@@ -14,20 +14,23 @@ public:
     vector<Point> biggest_blob;
     int workingImgSize = 300;
     Mat workingImg;
-    bool useCamera = false;
+    bool useCamera = true;
     bool foundBiggestRect;
     bool foundGrid;
     bool foundCells;
+    bool puzzleReadComplete;
     vector<vector<Point>> cellContours;
     vector<Mat> cells;
     int resizedCellWidth = 20;
     int resizedCellHeight = 30;
     Ptr<KNearest> kNearest;
+    vector<int> grid;
 
     void resetCheckpoints() {
         foundBiggestRect = false;
         foundGrid = false;
         foundCells = false;
+        puzzleReadComplete = false;
     }
 
     void displayImage() {
@@ -87,7 +90,6 @@ public:
         erode(vertical, vertical, vertical_structure, Point(-1, -1));
         dilate(vertical, vertical, vertical_structure, Point(-1, -1), 3);
 
-//        Mat mask = vertical + horizontal;
         Mat andMask;
         bitwise_and(vertical, horizontal, andMask);
         vector<vector<Point>> joints;
@@ -96,15 +98,6 @@ public:
         if (joints.size() >= 90 && joints.size() <= 110) {
             foundGrid = true;
         }
-//        printf("There are %lu joints\n", joints.size());
-
-//        // Refine mask
-//        Mat kernel = Mat::ones(2, 2, CV_8UC1);
-//        dilate(mask, mask, kernel);
-//        blur(mask, mask, Size(2,2));
-//        Mat masked = ~(workingImg - mask);
-//        dilate(masked, masked, Mat());
-//        return masked;
     }
 
     void findCells() {
@@ -120,34 +113,15 @@ public:
                 vector<Point> approx;
                 approxPolyDP(allContours[c], approx, 0.02*perimeter, true);
                 if (approx.size() == 4) {
-//                    printf("Size: %f\n", area);
                     localCellContours.push_back(orderPoints(approx));
-                    //TODO: remove temp draw below
-                    drawRect(allContours, c, Scalar(255, 255, 0));
                 }
             }
         }
-//        printf("There are %lu cells\n", localCellContours.size());
         if (localCellContours.size() == 81) {
-            cellContours = localCellContours;
+            cellContours = orderCellContours(localCellContours);
             foundCells = true;
         }
     }
-
-//    void readGrid() {
-//        int cropPixels = 2;
-//        vector<Mat> croppedCells;
-//        for (int i = 0; i < cellContours.size(); i++) {
-//            Rect roi(cellContours[i][0].x + cropPixels,
-//                     cellContours[i][0].y + cropPixels,
-//                     cellContours[i][2].x - cellContours[i][0].x - cropPixels*2,
-//                     cellContours[i][2].y - cellContours[i][0].y - cropPixels*2);
-//            croppedCells.push_back(workingImg(roi));
-//            string s = "./cell_samples/" + to_string(i) + ".png";
-//            imwrite( s, workingImg(roi) );
-//        }
-//        cells = croppedCells;
-//    }
 
     void createSampleClassifications() {
         Mat responseInts;
@@ -177,7 +151,7 @@ public:
             if (c == 27) {
                 return;
             } else {
-                responseInts.push_back(c);
+                responseInts.push_back(c - 48);
                 Mat matImageFloat;
                 imgRoiResized.convertTo(matImageFloat, CV_32FC1);
                 Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
@@ -229,6 +203,7 @@ public:
     }
 
     void readGrid() {
+        vector<int> sudokuGrid;
         Mat workingImgColor;
         cvtColor(workingImg.clone(), workingImgColor, cv::COLOR_GRAY2BGR);
         int cropPixels = 2;
@@ -240,42 +215,15 @@ public:
 
             findContours(imgRoi.clone(), numberContours, noArray(), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-            if (numberContours.size() == 0 || contourArea(numberContours[0]) < cellAreaThreshold) continue;
-
-            rectangle(workingImgColor, roiRect, Scalar(0, 0, 255), 2);
-
-            Rect bounding = boundingRect(numberContours[0]);
-            Mat numberImg = workingImg(bounding);
-            Mat numberImgResized;
-            resize(numberImg, numberImgResized, Size(resizedCellWidth, resizedCellHeight));
-
-            imshow("ROI", imgRoi);
-            int c = waitKey(0);
-            if (c == 27) {
-                return;
+            if (numberContours.size() == 0 || contourArea(numberContours[0]) < cellAreaThreshold) {
+                sudokuGrid.push_back(0);
             } else {
-                readCell(imgRoi);
-                printf("Type: %i\n\n", c);
-            }
-
-            rectangle(workingImgColor, roiRect, Scalar(0, 255, 0), 2);
+                sudokuGrid.push_back(readCell(imgRoi));
+            };
         }
-    }
-
-    /**
-     * Read the value of a single sudoku cell
-     * @param cell - processed grayscale image of a cell
-     */
-    void readCell(Mat cell) {
-        resize(cell, cell, Size(resizedCellWidth, resizedCellHeight));
-        Mat matFloat;
-        cell.convertTo(matFloat, CV_32FC1);
-        Mat matFlattenedFloat = matFloat.reshape(1, 1);
-        Mat matCurrentDigit(0, 0, CV_32F);
-        kNearest->findNearest(matFlattenedFloat, 1, matCurrentDigit);
-        float fltCurrentDigit = (float)matCurrentDigit.at<float>(0, 0);
-        int finalDigit = int(fltCurrentDigit);
-        printf("Read: %i\n", finalDigit);
+        grid = sudokuGrid;
+        puzzleReadComplete = true;
+//        printGrid(grid);
     }
 
 private:
@@ -289,6 +237,7 @@ private:
         );
         return cropped;
     }
+
     void printPoints(vector<Point> points) {
         printf(">>>%lu\n\n", points.size());
         for (int i=0; i < points.size(); i++) {
@@ -297,7 +246,13 @@ private:
     }
 
     void drawBiggestRect(vector<vector<Point>> contours, int index) {
-        drawContours(frame, contours, index, Scalar( 255, 255, 255 ), 2, 8, hierarchy, 0, Point());
+        Scalar color;
+        if (foundCells) {
+            color = Scalar(0, 255, 0);
+        } else {
+            color = Scalar(0, 0, 255);
+        }
+        drawContours(frame, contours, index, color, 2, 8, hierarchy, 0, Point());
     }
 
     void drawRect(vector<vector<Point>> contours, int index, Scalar color) {
@@ -346,7 +301,6 @@ private:
                 sqrt(pow((tr.x - br.x), 2) + pow((tr.y - br.y), 2)),
                 sqrt(pow((tl.x - bl.x), 2) + pow((tl.y - bl.y), 2))
         );
-//        printf("max width: %i\nmax height: %i\n", max_width, max_height);
 
         // Construct new points
         Point2f inputQuad[4];
@@ -365,5 +319,51 @@ private:
         warpPerspective(image, warped, matrix, Size(max_width, max_height));
         // Compute and apply transformation
         return warped;
+    }
+
+    /**
+     * Read the value of a single sudoku cell
+     * @param cell - processed grayscale image of a cell
+     */
+    int readCell(Mat cell) {
+        resize(cell, cell, Size(resizedCellWidth, resizedCellHeight));
+        Mat matFloat;
+        cell.convertTo(matFloat, CV_32FC1);
+        Mat matFlattenedFloat = matFloat.reshape(1, 1);
+        Mat matCurrentDigit(0, 0, CV_32F);
+        kNearest->findNearest(matFlattenedFloat, 1, matCurrentDigit);
+        float fltCurrentDigit = (float)matCurrentDigit.at<float>(0, 0);
+        int finalDigit = int(fltCurrentDigit);
+        return finalDigit;
+    }
+
+    /**
+     * Order cell contours lexocigraphically
+     * @param contours
+     * @return
+     */
+    vector<vector<Point>> orderCellContours(vector<vector<Point>> contours) {
+        vector<vector<Point>> sortedContours(contours);
+        sort(sortedContours.begin(), sortedContours.end(), [](vector<Point> a, vector<Point> b) -> bool {
+            return a[0].y < b[0].y;
+        });
+        for (int i=0; i < contours.size(); i+=9) {
+            sort(sortedContours.begin()+i, sortedContours.begin()+i+9, [](vector<Point> a, vector<Point> b) -> bool {
+                return a[0].x < b[0].x;
+            });
+        }
+        return sortedContours;
+    }
+
+    void printGrid(vector<int> grid) {
+        printf("\n----------------------------------\n");
+        for (int i=0; i < grid.size(); i++) {
+            printf("%i", grid[i]);
+            if ((i+1)%9 == 0) {
+                printf("\n----------------------------------\n");
+            } else {
+                printf(" | ");
+            }
+        }
     }
 };
