@@ -25,6 +25,7 @@ public:
     int resizedCellHeight = 30;
     Ptr<KNearest> kNearest;
     vector<int> grid;
+    vector<Point> offsets;
 
     void resetCheckpoints() {
         foundBiggestRect = false;
@@ -204,8 +205,6 @@ public:
 
     void readGrid() {
         vector<int> sudokuGrid;
-        Mat workingImgColor;
-        cvtColor(workingImg.clone(), workingImgColor, cv::COLOR_GRAY2BGR);
         int cropPixels = 2;
         int cellAreaThreshold = 40;
         for (int i = 0; i < cellContours.size(); i++) {
@@ -224,6 +223,14 @@ public:
         grid = sudokuGrid;
         puzzleReadComplete = true;
 //        printGrid(grid);
+    }
+
+    void displaySolution(vector<int> solution) {
+        offsets = findOffsets();
+        for (int i = 0; i < offsets.size(); i++) {
+                putText(frame, to_string(solution[i]), offsets[i], FONT_HERSHEY_PLAIN, 3, Scalar(0,0,0), 2);
+        }
+        imshow("Frame", frame);
     }
 
 private:
@@ -365,5 +372,26 @@ private:
                 printf(" | ");
             }
         }
+    }
+
+    vector<Point> findOffsets() {
+        vector<Point> offsetPoints;
+        int cropPixels = 2;
+        for (int i = 0; i < cellContours.size(); i++) {
+            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
+            vector<vector<Point>> numberContours;
+            Mat imgRoi(workingImg, roiRect);
+            Size wholesize;
+            Point pt;
+            imgRoi.locateROI(wholesize, pt);
+            offsetPoints.push_back(pt);
+        }
+//        for (Mat cell : cells) {
+//            Size wholesize;
+//            Point pt;
+//            cell.locateROI(wholesize, pt);
+//            offsetPoints.push_back(pt);
+//        }
+        return offsetPoints;
     }
 };

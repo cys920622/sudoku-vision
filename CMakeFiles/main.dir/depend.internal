@@ -59,6 +59,7 @@ CMakeFiles/main.dir/imageProcessor.cpp.o
 CMakeFiles/main.dir/main.cpp.o
  /Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp
  /Users/danielchoi/Dev/sudoku-c/main.cpp
+ /Users/danielchoi/Dev/sudoku-c/sudokuSolver.cpp
  /usr/local/include/opencv/cxcore.h
  /usr/local/include/opencv2/calib3d.hpp
  /usr/local/include/opencv2/calib3d/calib3d_c.h
@@ -112,3 +113,5 @@ CMakeFiles/main.dir/main.cpp.o
  /usr/local/include/opencv2/videoio/videoio_c.h
  /usr/local/include/opencv2/xfeatures2d.hpp
  /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
+CMakeFiles/main.dir/sudokuSolver.cpp.o
+ /Users/danielchoi/Dev/sudoku-c/sudokuSolver.cpp

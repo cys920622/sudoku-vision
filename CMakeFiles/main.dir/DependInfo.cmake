@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp" "/Users/danielchoi/Dev/sudoku-c/CMakeFiles/main.dir/imageProcessor.cpp.o"
   "/Users/danielchoi/Dev/sudoku-c/main.cpp" "/Users/danielchoi/Dev/sudoku-c/CMakeFiles/main.dir/main.cpp.o"
+  "/Users/danielchoi/Dev/sudoku-c/sudokuSolver.cpp" "/Users/danielchoi/Dev/sudoku-c/CMakeFiles/main.dir/sudokuSolver.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")
 

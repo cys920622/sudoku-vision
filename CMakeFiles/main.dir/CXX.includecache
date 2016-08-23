@@ -23,6 +23,14 @@ opencv2/opencv.hpp
 /Users/danielchoi/Dev/sudoku-c/opencv2/opencv.hpp
 imageProcessor.cpp
 /Users/danielchoi/Dev/sudoku-c/imageProcessor.cpp
+sudokuSolver.cpp
+/Users/danielchoi/Dev/sudoku-c/sudokuSolver.cpp
+
+/Users/danielchoi/Dev/sudoku-c/sudokuSolver.cpp
+vector
+-
+iostream
+-
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

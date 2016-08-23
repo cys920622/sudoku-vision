@@ -58,6 +58,7 @@ CMakeFiles/main.dir/imageProcessor.cpp.o: /usr/local/include/opencv2/xfeatures2d
 
 CMakeFiles/main.dir/main.cpp.o: imageProcessor.cpp
 CMakeFiles/main.dir/main.cpp.o: main.cpp
+CMakeFiles/main.dir/main.cpp.o: sudokuSolver.cpp
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv/cxcore.h
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/calib3d.hpp
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/calib3d/calib3d_c.h
@@ -111,4 +112,6 @@ CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/videoio.hpp
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/videoio/videoio_c.h
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/xfeatures2d.hpp
 CMakeFiles/main.dir/main.cpp.o: /usr/local/include/opencv2/xfeatures2d/nonfree.hpp
+
+CMakeFiles/main.dir/sudokuSolver.cpp.o: sudokuSolver.cpp
 

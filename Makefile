@@ -177,6 +177,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+sudokuSolver.o: sudokuSolver.cpp.o
+
+.PHONY : sudokuSolver.o
+
+# target to build an object file
+sudokuSolver.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/sudokuSolver.cpp.o
+.PHONY : sudokuSolver.cpp.o
+
+sudokuSolver.i: sudokuSolver.cpp.i
+
+.PHONY : sudokuSolver.i
+
+# target to preprocess a source file
+sudokuSolver.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/sudokuSolver.cpp.i
+.PHONY : sudokuSolver.cpp.i
+
+sudokuSolver.s: sudokuSolver.cpp.s
+
+.PHONY : sudokuSolver.s
+
+# target to generate assembly for a file
+sudokuSolver.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/sudokuSolver.cpp.s
+.PHONY : sudokuSolver.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -192,6 +219,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... sudokuSolver.o"
+	@echo "... sudokuSolver.i"
+	@echo "... sudokuSolver.s"
 .PHONY : help
 
 
