@@ -11,7 +11,7 @@ class ImageProcessor {
 public:
     Mat frame;
     vector<Vec4i> hierarchy;
-    vector<Point> biggest_blob;
+    vector<Point> biggestBlob;
     int workingImgSize = 300;
     Mat workingImg;
     bool useCamera = true;
@@ -26,6 +26,8 @@ public:
     Ptr<KNearest> kNearest;
     vector<int> grid;
     vector<Point> offsets;
+
+    Mat transformedImg;
 
     void resetCheckpoints() {
         foundBiggestRect = false;
@@ -55,7 +57,7 @@ public:
         Canny(workingImg, canny, thresh, thresh*2, 3 );
         findContours(canny, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-        double max_area = 0;
+        double maxArea = 0;
         int contourIndex = 0;
         for (int c = 0; c < contours.size(); c++) {
             double area = contourArea(contours[c]);
@@ -63,10 +65,10 @@ public:
                 double perimeter = arcLength(contours[c], true);
                 vector<Point> approx;
                 approxPolyDP(contours[c], approx, 0.02*perimeter, true);
-                if (area > max_area && approx.size() == 4) {
-                    max_area = area;
-                    biggest_blob = orderPoints(approx);
-                    workingImg = transformAndResize(workingImg.clone(), biggest_blob);
+                if (area > maxArea && approx.size() == 4) {
+                    maxArea = area;
+                    biggestBlob = orderPoints(approx);
+                    workingImg = transformAndResize(workingImg.clone(), biggestBlob);
                     contourIndex = c;
                     foundBiggestRect = true;
                 }
@@ -80,16 +82,16 @@ public:
         Mat horizontal = workingImg.clone();
         Mat vertical = workingImg.clone();
         int scale = 2;
-        int horizontal_size = horizontal.cols / scale;
-        Mat horizontal_structure = getStructuringElement(MORPH_RECT, Size(horizontal_size, 1));
+        int horizontalSize = horizontal.cols / scale;
+        Mat horizontalStructure = getStructuringElement(MORPH_RECT, Size(horizontalSize, 1));
 
-        erode(horizontal, horizontal, horizontal_structure, Point(-1, -1));
-        dilate(horizontal, horizontal, horizontal_structure, Point(-1, -1), 3);
+        erode(horizontal, horizontal, horizontalStructure, Point(-1, -1));
+        dilate(horizontal, horizontal, horizontalStructure, Point(-1, -1), 3);
 
-        int vertical_size = vertical.cols / scale;
-        Mat vertical_structure = getStructuringElement(MORPH_RECT, Size(1, vertical_size));
-        erode(vertical, vertical, vertical_structure, Point(-1, -1));
-        dilate(vertical, vertical, vertical_structure, Point(-1, -1), 3);
+        int verticalSize = vertical.cols / scale;
+        Mat verticalStructure = getStructuringElement(MORPH_RECT, Size(1, verticalSize));
+        erode(vertical, vertical, verticalStructure, Point(-1, -1));
+        dilate(vertical, vertical, verticalStructure, Point(-1, -1), 3);
 
         Mat andMask;
         bitwise_and(vertical, horizontal, andMask);
@@ -226,10 +228,41 @@ public:
     }
 
     void displaySolution(vector<int> solution) {
-        offsets = findOffsets();
+        offsets = findOffsets(frame.size().width, frame.size().height);
+        Mat overlay = Mat::zeros(frame.size().height, frame.size().width, CV_8UC3);
         for (int i = 0; i < offsets.size(); i++) {
-                putText(frame, to_string(solution[i]), offsets[i], FONT_HERSHEY_PLAIN, 3, Scalar(0,0,0), 2);
+            if (solution[i] != grid[i]) {
+                putText(overlay, to_string(solution[i]), offsets[i], FONT_HERSHEY_PLAIN, 4, Scalar(0,255,255), 4);
+            }
         }
+        Mat warpedOverlay = warpToPoints(overlay, biggestBlob);
+
+        Mat mask2, m, m1;
+        cvtColor(warpedOverlay, mask2, CV_BGR2GRAY);
+        threshold(~mask2, mask2, 230, 255, CV_THRESH_BINARY_INV); //imshow("mask2", mask2);
+
+        vector<Mat> maskChannels(3), result_mask(3);
+        split(warpedOverlay, maskChannels);
+        bitwise_and(maskChannels[0], mask2, result_mask[0]);
+        bitwise_and(maskChannels[1], mask2, result_mask[1]);
+        bitwise_and(maskChannels[2], mask2, result_mask[2]);
+        merge(result_mask, m); // imshow("m", m);
+
+        mask2 = 255 - mask2;
+        vector<Mat> srcChannels(3);
+        split(frame, srcChannels);
+        bitwise_and(srcChannels[0], mask2, result_mask[0]);
+        bitwise_and(srcChannels[1], mask2, result_mask[1]);
+        bitwise_and(srcChannels[2], mask2, result_mask[2]);
+        merge(result_mask, m1); // imshow("m1", m1);
+
+        addWeighted(m, 1, m1, 1, 0, m1); //imshow("m2", m1);
+
+        m1.copyTo(frame);
+
+//        imshow("Overlay", warpToPoints(overlay, biggestBlob));
+
+//        overlay.copyTo(transformedImg);
         imshow("Frame", frame);
     }
 
@@ -268,6 +301,7 @@ private:
 
     Mat transformAndResize(Mat image, vector<Point> rect) {
         Mat transformed = fourPointTransform(image, rect);
+        transformedImg = transformed;
         Mat out;
         resize(transformed, out, Size(workingImgSize, workingImgSize), 0, 0, CV_INTER_CUBIC);
         return out;
@@ -293,12 +327,12 @@ private:
         return ordered;
     }
 
-    Mat fourPointTransform(Mat image, vector<Point> ordered_points) {
+    Mat fourPointTransform(Mat image, vector<Point> orderedPoints) {
         // order is tl, tr, br, bl
-        Point tl = ordered_points[0];
-        Point tr = ordered_points[1];
-        Point br = ordered_points[2];
-        Point bl = ordered_points[3];
+        Point tl = orderedPoints[0];
+        Point tr = orderedPoints[1];
+        Point br = orderedPoints[2];
+        Point bl = orderedPoints[3];
 
         int max_width = (int) max(
                 sqrt(pow((br.x - bl.x), 2) + pow((br.y - bl.y), 2)),
@@ -325,6 +359,24 @@ private:
         Mat warped;
         warpPerspective(image, warped, matrix, Size(max_width, max_height));
         // Compute and apply transformation
+        return warped;
+    }
+
+    Mat warpToPoints(Mat image, vector<Point> orderedPoints) {
+        Point2f inputQuad[4];
+        inputQuad[0] = Point2f(0, 0);
+        inputQuad[1] = Point2f(image.size().width, 0);
+        inputQuad[2] = Point2f(image.size().width, image.size().height);
+        inputQuad[3] = Point2f(0, image.size().height);
+        Point2f outputQuad[4];
+        outputQuad[0] = Point2f(orderedPoints[0]);
+        outputQuad[1] = Point2f(orderedPoints[1]);
+        outputQuad[2] = Point2f(orderedPoints[2]);
+        outputQuad[3] = Point2f(orderedPoints[3]);
+
+        Mat matrix = getPerspectiveTransform(inputQuad, outputQuad);
+        Mat warped;
+        warpPerspective(image, warped, matrix, warped.size());
         return warped;
     }
 
@@ -374,24 +426,27 @@ private:
         }
     }
 
-    vector<Point> findOffsets() {
-        vector<Point> offsetPoints;
-        int cropPixels = 2;
-        for (int i = 0; i < cellContours.size(); i++) {
-            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
-            vector<vector<Point>> numberContours;
-            Mat imgRoi(workingImg, roiRect);
-            Size wholesize;
-            Point pt;
-            imgRoi.locateROI(wholesize, pt);
-            offsetPoints.push_back(pt);
-        }
-//        for (Mat cell : cells) {
+    vector<Point> findOffsets(double width, double height) {
+//        vector<Point> offsetPoints;
+//        int cropPixels = 2;
+//        for (int i = 0; i < cellContours.size(); i++) {
+//            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
+//            vector<vector<Point>> numberContours;
+//            Mat imgRoi(workingImg, roiRect);
 //            Size wholesize;
 //            Point pt;
-//            cell.locateROI(wholesize, pt);
+//            imgRoi.locateROI(wholesize, pt);
 //            offsetPoints.push_back(pt);
 //        }
+//        return offsetPoints;
+
+        vector<Point> offsetPoints;
+        for (int y=1; y<=9; y++) {
+            for (int x=0; x<9; x++) {
+                Point pt(width*x/9 + 5, height*y/9 - 5);
+                offsetPoints.push_back(pt);
+            }
+        }
         return offsetPoints;
     }
 };

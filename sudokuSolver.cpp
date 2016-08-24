@@ -16,7 +16,7 @@ public:
 
     vector<int> solveSudoku(vector<int> serialGrid) {
         if (serialGrid != serialGridToSolve) {
-            printf("Found new puzzle\n");
+//            printf("Found new puzzle\n");
             serialGridToSolve = serialGrid;
             workingGrid = deserialize(serialGridToSolve);
             solve(workingGrid);
