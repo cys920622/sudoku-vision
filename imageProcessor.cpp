@@ -47,7 +47,7 @@ public:
         if (useCamera) {
             video >> frame;
         } else {
-            frame = imread("sudoku_sample.png",1);
+            frame = imread("img/webcam_sample.jpg",1);
         }
         cvtColor(frame, workingImg, CV_BGR2GRAY);
         GaussianBlur(workingImg, workingImg, Size(7,7), 1.5, 1.5);
@@ -149,7 +149,6 @@ public:
             resize(imgRoi, imgRoiResized, Size(resizedCellWidth, resizedCellHeight));
 
             imshow("workingImg", workingImgColor);
-            imshow("imgroi", imgRoi); //TODO: remove temp
             int c = waitKey(0);
             if (c == 27) {
                 return;
@@ -239,14 +238,14 @@ public:
 
         Mat mask2, m, m1;
         cvtColor(warpedOverlay, mask2, CV_BGR2GRAY);
-        threshold(~mask2, mask2, 230, 255, CV_THRESH_BINARY_INV); //imshow("mask2", mask2);
+        threshold(~mask2, mask2, 230, 255, CV_THRESH_BINARY_INV);
 
         vector<Mat> maskChannels(3), result_mask(3);
         split(warpedOverlay, maskChannels);
         bitwise_and(maskChannels[0], mask2, result_mask[0]);
         bitwise_and(maskChannels[1], mask2, result_mask[1]);
         bitwise_and(maskChannels[2], mask2, result_mask[2]);
-        merge(result_mask, m); // imshow("m", m);
+        merge(result_mask, m);
 
         mask2 = 255 - mask2;
         vector<Mat> srcChannels(3);
@@ -254,15 +253,11 @@ public:
         bitwise_and(srcChannels[0], mask2, result_mask[0]);
         bitwise_and(srcChannels[1], mask2, result_mask[1]);
         bitwise_and(srcChannels[2], mask2, result_mask[2]);
-        merge(result_mask, m1); // imshow("m1", m1);
+        merge(result_mask, m1);
 
-        addWeighted(m, 1, m1, 1, 0, m1); //imshow("m2", m1);
+        addWeighted(m, 1, m1, 1, 0, m1);
 
         m1.copyTo(frame);
-
-//        imshow("Overlay", warpToPoints(overlay, biggestBlob));
-
-//        overlay.copyTo(transformedImg);
         imshow("Frame", frame);
     }
 
