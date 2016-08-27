@@ -2,6 +2,8 @@
 
 > sudoku-vision is an augmented reality application that displays the answer to sudoku puzzles when you hold them up to your webcam.
 
+![](img/example.gif)
+
 Each frame from the webcam undergoes a number of processing steps to extract the sudoku grid.
 ![](img/screens-01.png)
 
