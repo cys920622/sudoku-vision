@@ -33,12 +33,20 @@ Compile:
 cmake . && make main
 ```
 
-Run:
+Run in solve mode:
 
 ```sh
 ./main
 ```
-
+Run using sample image:
+```sh
+./main sample
+```
+Run OCR sample data creator:
+```sh
+./main train
+```
+Press `ESC` to quit the application.
 ## Future work
 * Separate sample OCR data creation and training from cell detection workflow
 * Optimize digit recognition
