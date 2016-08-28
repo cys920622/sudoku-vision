@@ -422,23 +422,10 @@ private:
     }
 
     vector<Point> findOffsets(double width, double height) {
-//        vector<Point> offsetPoints;
-//        int cropPixels = 2;
-//        for (int i = 0; i < cellContours.size(); i++) {
-//            Rect roiRect = cropContourToRect(cellContours[i], cropPixels);
-//            vector<vector<Point>> numberContours;
-//            Mat imgRoi(workingImg, roiRect);
-//            Size wholesize;
-//            Point pt;
-//            imgRoi.locateROI(wholesize, pt);
-//            offsetPoints.push_back(pt);
-//        }
-//        return offsetPoints;
-
         vector<Point> offsetPoints;
         for (int y=1; y<=9; y++) {
             for (int x=0; x<9; x++) {
-                Point pt(width*x/9 + 5, height*y/9 - 5);
+                Point pt((int) (width * x / 9 + 25), (int) (height * y / 9 - 20));
                 offsetPoints.push_back(pt);
             }
         }

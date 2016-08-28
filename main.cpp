@@ -6,48 +6,57 @@
 using namespace cv;
 using namespace std;
 
-int main(int, char**) {
+int main(int argc, char* argv[]) {
     printf("START\n");
 
-    VideoCapture cap(0); // open the default camera
-    if(!cap.isOpened())  // check if we succeeded
-        return -1;
+    VideoCapture cap(0);
     ImageProcessor ip;
     Solver solver;
     bool isTraining = false;
 
+    if (argc > 1) {
+        for (int i = 1; i < argc; i++) {
+            string arg = argv[i];
+            if (arg == "train") {
+                printf("Creating sample data\n");
+                isTraining = true;
+            } else if (arg == "sample") {
+                printf("Using sample static image\n");
+                ip.useCamera = false;
+            } else {
+                cerr << arg << " is not a valid option.\n";
+                return -1;
+            }
+        }
+    }
+
     for (int i = 0;; i++) {
-//    for (int i = 0; i < 1; i++) { // One iteration
         while (true) {
             ip.resetCheckpoints();
             ip.findBiggestRect(cap);
             if (!ip.foundBiggestRect) {
-//                printf("1: finding rect: %d\n", i);
                 ip.displayImage();
                 break;
             }
             ip.findGrid();
             if (!ip.foundGrid) {
-//                printf("2: finding grid: %d\n", i);
                 ip.displayImage();
                 break;
             }
             ip.findCells();
             if (!ip.foundCells) {
-//                printf("3: finding cells: %d\n", i);
                 ip.displayImage();
                 break;
             }
             if (isTraining) {
                 ip.createSampleClassifications();
                 printf("Training completed successfully.\n");
-                break;
+                return 0;
             }
 
             ip.trainKnn();
             ip.readGrid();
             if (!ip.puzzleReadComplete) {
-//                printf("4: reading grid: %d\n", i);
                 ip.displayImage();
                 break;
             }
@@ -55,9 +64,9 @@ int main(int, char**) {
             ip.displaySolution(solver.solveSudoku(ip.grid));
             break;
         }
-        // Quit on key press
-        if (waitKey(30) >= 0) break;
+        // Quit on pressing ESC
+        if (waitKey(30) == 27) break;
     }
-    // the camera will be deinitialized automatically in VideoCapture destructor
+
     return 0;
 }
